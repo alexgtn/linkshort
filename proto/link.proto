@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = ".;link";
+
+package user;
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service LinkshortService {
+  rpc Redirect (RedirectRequest) returns (RedirectReply) {
+     option (google.api.http) = {
+        get: "/{short_path}"
+     };
+  }
+  rpc CreateLink (CreateLinkRequest) returns (CreateLinkReply) {
+    option (google.api.http) = {
+      post: "/api/link"
+      body: "*"
+    };
+  }
+}
+
+message CreateLinkRequest {
+  string long_uri = 1;
+}
+
+message CreateLinkReply {
+  string short_uri = 1;
+}
+
+message RedirectRequest {
+  string short_path = 1;
+}
+
+message RedirectReply {
+  string long_uri = 1;
+}

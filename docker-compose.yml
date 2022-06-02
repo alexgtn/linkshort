@@ -1,0 +1,102 @@
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.7
+    restart: always
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--entrypoints.main.address=:50051"
+    ports:
+      - "80:80"
+      - "50051:50051"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+      # Caasdoor
+      - "8081:8081"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  main:
+    build: .
+    restart: always
+    labels:
+      - "traefik.http.routers.main.rule=Host(`localhost`)"
+      - "traefik.http.routers.main.entrypoints=main"
+      - "traefik.http.services.main.loadbalancer.server.scheme=h2c"
+      - "traefik.http.services.main.loadbalancer.server.port=50051"
+
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: default
+    healthcheck:
+      test: "pg_isready --username=default && psql --username=default --list"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+#  pgbackups3:
+#    image: schickling/postgres-backup-s3
+  #  restart: always
+  #    environment:
+#      SCHEDULE: '@every 5m'
+#      S3_REGION: eu-central-1
+#      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+#      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+#      S3_BUCKET: ${S3_BUCKET}
+#      S3_PREFIX: pgbackup
+#      POSTGRES_HOST: postgres
+#      POSTGRES_DATABASE: postgres
+#      POSTGRES_USER: default
+#      POSTGRES_PASSWORD: default
+#      POSTGRES_EXTRA_OPTS: '-Z6 --schema=public --blobs'
+
+  datadog:
+    image: gcr.io/datadoghq/agent:7
+    restart: always
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_SITE: "datadoghq.eu"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: true
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: true
+      DD_LOGS_ENABLED: true
+      DD_HOSTNAME: supernova
+      DD_CONTAINER_EXCLUDE: image:gcr.io/datadoghq/agent*
+      DD_CONTAINER_EXCLUDE_METRICS: image:gcr.io/datadoghq/agent*
+      DD_CONTAINER_EXCLUDE_LOGS: image:gcr.io/datadoghq/agent*
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+
+#  watchtower:
+#    image: containrrr/watchtower:1.4.0
+#    restart: always
+#    environment:
+#      WATCHTOWER_POLL_INTERVAL: "5"
+#      WATCHTOWER_ROLLING_RESTART: "true"
+#      WATCHTOWER_CLEANUP: "true"
+#      REPO_USER: ${DOCKER_REGISTRY_USER}
+#      REPO_PASS: ${DOCKER_REGISTRY_PASSWORD}
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+
+#  caasdoor:
+#    image: casbin/casdoor:v1.47.0
+#    restart: always
+#    volumes:
+#      - ./caasdoor.conf:/conf/caasdoor.conf
+#    labels:
+#      - "traefik.http.routers.main.rule=Host(`localhost`)"
+#      - "traefik.http.routers.main.entrypoints=caasdoor"
+#      - "traefik.http.services.main.loadbalancer.server.scheme=http"
+#      - "traefik.http.services.main.loadbalancer.server.port=8001"
