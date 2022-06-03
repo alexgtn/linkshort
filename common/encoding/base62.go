@@ -2,10 +2,10 @@ package encoding
 
 import "math/big"
 
-func ToBase62(str string) string {
+func ToBase62(in []byte) string {
 	var i big.Int
 
-	i.SetBytes([]byte(str))
+	i.SetBytes(in)
 
 	return i.Text(62)
 }
