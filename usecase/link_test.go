@@ -35,7 +35,7 @@ func newMockRepoWithSeed(links ...*link.Link) *mockLinkRepo {
 }
 
 func (m *mockLinkRepo) Create(ctx context.Context, long string) (*link.Link, error) {
-	_, ok := lo.Find(m.links, func(l *link.Link) bool { return l.Long() == long })
+	_, ok := lo.Find(m.links, func(l *link.Link) bool { return l.LongURL() == long })
 	if ok {
 		return nil, fmt.Errorf("link already exists %s", long)
 	}
@@ -48,7 +48,7 @@ func (m *mockLinkRepo) Create(ctx context.Context, long string) (*link.Link, err
 }
 
 func (m *mockLinkRepo) GetOne(ctx context.Context, long string) (*link.Link, error) {
-	l, ok := lo.Find(m.links, func(l *link.Link) bool { return l.Long() == long })
+	l, ok := lo.Find(m.links, func(l *link.Link) bool { return l.LongURL() == long })
 	if !ok {
 		return nil, fmt.Errorf("link not found %s", long)
 	}
@@ -169,7 +169,7 @@ func TestService_Create(t *testing.T) {
 			LongUri: long,
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, l.ShortUri, existingLink.Short())
+		assert.Equal(t, l.ShortUri, existingLink.ShortPath())
 	})
 }
 

@@ -12,9 +12,11 @@ const MaxLen = 2048
 
 // Link is a link
 type Link struct {
-	id            int
-	short         string
-	long          string
+	id int
+	// eg. platform-base-url/shortPath
+	shortPath string
+	// original long uri that was shortened
+	longURL       string
 	accessedTimes int
 	createdAt     time.Time
 }
@@ -39,12 +41,12 @@ func (u *Link) ID() int {
 	return u.id
 }
 
-func (u *Link) Short() string {
-	return u.short
+func (u *Link) ShortPath() string {
+	return u.shortPath
 }
 
-func (u *Link) Long() string {
-	return u.long
+func (u *Link) LongURL() string {
+	return u.longURL
 }
 
 func (u *Link) CreatedAt() time.Time {

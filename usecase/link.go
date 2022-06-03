@@ -37,6 +37,7 @@ func NewLinkService(r linkRepo, baseURL string) *service {
 	}
 }
 
+// Redirect returns the long URL provided a short path
 func (s *service) Redirect(ctx context.Context, r *pb.RedirectRequest) (*pb.RedirectReply, error) {
 	long := strings.TrimSpace(r.ShortPath)
 
@@ -51,10 +52,11 @@ func (s *service) Redirect(ctx context.Context, r *pb.RedirectRequest) (*pb.Redi
 	}
 	// return existing
 	return &pb.RedirectReply{
-		LongUri: existingLink.Long(),
+		LongUri: existingLink.LongURL(),
 	}, nil
 }
 
+// Create creates a short link (if not exists), otherwise returns existing link
 func (s *service) Create(ctx context.Context, r *pb.CreateLinkRequest) (*pb.CreateLinkReply, error) {
 	long := strings.TrimSpace(r.LongUri)
 
@@ -73,12 +75,12 @@ func (s *service) Create(ctx context.Context, r *pb.CreateLinkRequest) (*pb.Crea
 
 		// return new link
 		return &pb.CreateLinkReply{
-			ShortUri: shortURI(s.baseURL, newLink.Short()),
+			ShortUri: shortURI(s.baseURL, newLink.ShortPath()),
 		}, nil
 	}
 	// return existing
 	return &pb.CreateLinkReply{
-		ShortUri: shortURI(s.baseURL, existingLink.Short()),
+		ShortUri: shortURI(s.baseURL, existingLink.ShortPath()),
 	}, nil
 }
 
