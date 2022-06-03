@@ -2,10 +2,14 @@ package link
 
 import (
 	"context"
+	"log"
 	"testing"
 
+	"entgo.io/ent/dialect/sql/schema"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/alexgtn/go-linkshort/ent"
+	"github.com/alexgtn/go-linkshort/ent/migrate"
 	"github.com/alexgtn/go-linkshort/infra/sqlite"
 )
 
@@ -13,9 +17,26 @@ var long = "https://jsonplaceholder.typicode.com/albums"
 
 func TestLinkRepo_Create(t *testing.T) {
 	c := sqlite.OpenEnt("file:mockrepo?mode=memory&cache=shared&_fk=1")
+	defer func(client *ent.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Fatal("error closing client")
+		}
+	}(c)
+
+	ctx := context.Background()
+	// Run migration.
+	err := c.Schema.Create(ctx,
+		schema.WithAtlas(true),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true))
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	r := NewLinkRepo(c)
 
-	_, err := r.Create(context.Background(), long)
+	_, err = r.Create(context.Background(), long)
 	assert.NoError(t, err)
 
 	// error on duplicates
@@ -30,6 +51,23 @@ func TestLinkRepo_Create(t *testing.T) {
 
 func TestLinkRepo_GetOne(t *testing.T) {
 	c := sqlite.OpenEnt("file:mockrepo?mode=memory&cache=shared&_fk=1")
+	defer func(client *ent.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Fatal("error closing client")
+		}
+	}(c)
+
+	ctx := context.Background()
+	// Run migration.
+	err := c.Schema.Create(ctx,
+		schema.WithAtlas(true),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true))
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	r := NewLinkRepo(c)
 
 	l, err := r.Create(context.Background(), long)
