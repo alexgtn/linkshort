@@ -57,7 +57,37 @@ func (m *CreateLinkRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for LongUri
+	if utf8.RuneCountInString(m.GetLongUri()) > 2048 {
+		err := CreateLinkRequestValidationError{
+			field:  "LongUri",
+			reason: "value length must be at most 2048 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if uri, err := url.Parse(m.GetLongUri()); err != nil {
+		err = CreateLinkRequestValidationError{
+			field:  "LongUri",
+			reason: "value must be a valid URI",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	} else if !uri.IsAbs() {
+		err := CreateLinkRequestValidationError{
+			field:  "LongUri",
+			reason: "value must be absolute",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return CreateLinkRequestMultiError(errors)
@@ -263,7 +293,27 @@ func (m *RedirectRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for ShortPath
+	if utf8.RuneCountInString(m.GetShortPath()) > 2048 {
+		err := RedirectRequestValidationError{
+			field:  "ShortPath",
+			reason: "value length must be at most 2048 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_RedirectRequest_ShortPath_Pattern.MatchString(m.GetShortPath()) {
+		err := RedirectRequestValidationError{
+			field:  "ShortPath",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9_]*$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RedirectRequestMultiError(errors)
@@ -342,6 +392,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RedirectRequestValidationError{}
+
+var _RedirectRequest_ShortPath_Pattern = regexp.MustCompile("^[a-zA-Z0-9_]*$")
 
 // Validate checks the field values on RedirectReply with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
