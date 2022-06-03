@@ -8,6 +8,9 @@ import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
 
+// Option annotation docs
+// https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
+
 service LinkshortService {
   rpc Redirect (RedirectRequest) returns (RedirectReply) {
      option (google.api.http) = {
@@ -22,8 +25,11 @@ service LinkshortService {
   }
 }
 
+// Validation docs
+// https://github.com/envoyproxy/protoc-gen-validate
+
 message CreateLinkRequest {
-  string long_uri = 1;
+  string long_uri = 1 [(validate.rules).string = {uri: true, max_len: 2048}];
 }
 
 message CreateLinkReply {
@@ -31,7 +37,7 @@ message CreateLinkReply {
 }
 
 message RedirectRequest {
-  string short_path = 1;
+  string short_path = 1 [(validate.rules).string = {pattern:   "^[a-zA-Z0-9_]*$", max_len: 2048}];
 }
 
 message RedirectReply {
