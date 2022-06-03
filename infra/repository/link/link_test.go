@@ -18,6 +18,7 @@ func TestLinkRepo_Create(t *testing.T) {
 	_, err := r.Create(context.Background(), long)
 	assert.NoError(t, err)
 
+	// error on duplicates
 	_, err = r.Create(context.Background(), long)
 	assert.Error(t, err)
 
