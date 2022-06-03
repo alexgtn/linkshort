@@ -4,26 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/alexgtn/go-linkshort/domain/user"
-	user_repo "github.com/alexgtn/go-linkshort/infra/repository/user"
+	"github.com/alexgtn/go-linkshort/domain/link"
 	pb "github.com/alexgtn/go-linkshort/proto"
 )
 
 type linkRepo interface {
-	GetByID(ctx context.Context, id int) (*user.User, error)
-	Create(ctx context.Context, age int, name string) (*user.User, error)
-	Update(ctx context.Context, id int, opts ...user_repo.Option) (*user.User, error)
+	Create(ctx context.Context, long string) (*link.Link, error)
+	GetOne(ctx context.Context, long string) (*link.Link, error)
 }
 
 type service struct {
 	pb.UnimplementedLinkshortServiceServer
-	userRepo linkRepo
+	linkRepo linkRepo
 	baseURL  string
 }
 
-func NewUserService(r linkRepo, baseURL string) *service {
+func NewLinkService(r linkRepo, baseURL string) *service {
 	return &service{
-		userRepo: r,
+		linkRepo: r,
 		baseURL:  baseURL,
 	}
 }

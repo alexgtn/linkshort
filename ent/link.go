@@ -22,8 +22,6 @@ type Link struct {
 	AccessedTimes int `json:"accessed_times,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -35,7 +33,7 @@ func (*Link) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case link.FieldLongURI:
 			values[i] = new(sql.NullString)
-		case link.FieldCreatedAt, link.FieldUpdatedAt:
+		case link.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Link", columns[i])
@@ -76,12 +74,6 @@ func (l *Link) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				l.CreatedAt = value.Time
 			}
-		case link.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				l.UpdatedAt = value.Time
-			}
 		}
 	}
 	return nil
@@ -116,8 +108,6 @@ func (l *Link) String() string {
 	builder.WriteString(fmt.Sprintf("%v", l.AccessedTimes))
 	builder.WriteString(", created_at=")
 	builder.WriteString(l.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", updated_at=")
-	builder.WriteString(l.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

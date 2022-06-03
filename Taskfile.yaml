@@ -35,7 +35,7 @@ tasks:
   generate-migration:
     cmds:
       - go build .
-      - ./supernova generate-migration
+      - ./go-linkshort generate-migration
       - go generate ./ent
 
   validate-migration:

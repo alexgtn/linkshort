@@ -18,7 +18,21 @@ func init() {
 	// linkDescLongURI is the schema descriptor for long_uri field.
 	linkDescLongURI := linkFields[0].Descriptor()
 	// link.LongURIValidator is a validator for the "long_uri" field. It is called by the builders before save.
-	link.LongURIValidator = linkDescLongURI.Validators[0].(func(string) error)
+	link.LongURIValidator = func() func(string) error {
+		validators := linkDescLongURI.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(long_uri string) error {
+			for _, fn := range fns {
+				if err := fn(long_uri); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// linkDescAccessedTimes is the schema descriptor for accessed_times field.
 	linkDescAccessedTimes := linkFields[1].Descriptor()
 	// link.DefaultAccessedTimes holds the default value on creation for the accessed_times field.
@@ -29,10 +43,4 @@ func init() {
 	linkDescCreatedAt := linkFields[2].Descriptor()
 	// link.DefaultCreatedAt holds the default value on creation for the created_at field.
 	link.DefaultCreatedAt = linkDescCreatedAt.Default.(func() time.Time)
-	// linkDescUpdatedAt is the schema descriptor for updated_at field.
-	linkDescUpdatedAt := linkFields[3].Descriptor()
-	// link.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	link.DefaultUpdatedAt = linkDescUpdatedAt.Default.(func() time.Time)
-	// link.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	link.UpdateDefaultUpdatedAt = linkDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -55,12 +54,6 @@ func (lu *LinkUpdate) AddAccessedTimes(i int) *LinkUpdate {
 	return lu
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (lu *LinkUpdate) SetUpdatedAt(t time.Time) *LinkUpdate {
-	lu.mutation.SetUpdatedAt(t)
-	return lu
-}
-
 // Mutation returns the LinkMutation object of the builder.
 func (lu *LinkUpdate) Mutation() *LinkMutation {
 	return lu.mutation
@@ -72,7 +65,6 @@ func (lu *LinkUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
-	lu.defaults()
 	if len(lu.hooks) == 0 {
 		if err = lu.check(); err != nil {
 			return 0, err
@@ -124,14 +116,6 @@ func (lu *LinkUpdate) Exec(ctx context.Context) error {
 func (lu *LinkUpdate) ExecX(ctx context.Context) {
 	if err := lu.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (lu *LinkUpdate) defaults() {
-	if _, ok := lu.mutation.UpdatedAt(); !ok {
-		v := link.UpdateDefaultUpdatedAt()
-		lu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -189,13 +173,6 @@ func (lu *LinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: link.FieldAccessedTimes,
 		})
 	}
-	if value, ok := lu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: link.FieldUpdatedAt,
-		})
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{link.Label}
@@ -242,12 +219,6 @@ func (luo *LinkUpdateOne) AddAccessedTimes(i int) *LinkUpdateOne {
 	return luo
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (luo *LinkUpdateOne) SetUpdatedAt(t time.Time) *LinkUpdateOne {
-	luo.mutation.SetUpdatedAt(t)
-	return luo
-}
-
 // Mutation returns the LinkMutation object of the builder.
 func (luo *LinkUpdateOne) Mutation() *LinkMutation {
 	return luo.mutation
@@ -266,7 +237,6 @@ func (luo *LinkUpdateOne) Save(ctx context.Context) (*Link, error) {
 		err  error
 		node *Link
 	)
-	luo.defaults()
 	if len(luo.hooks) == 0 {
 		if err = luo.check(); err != nil {
 			return nil, err
@@ -318,14 +288,6 @@ func (luo *LinkUpdateOne) Exec(ctx context.Context) error {
 func (luo *LinkUpdateOne) ExecX(ctx context.Context) {
 	if err := luo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (luo *LinkUpdateOne) defaults() {
-	if _, ok := luo.mutation.UpdatedAt(); !ok {
-		v := link.UpdateDefaultUpdatedAt()
-		luo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -398,13 +360,6 @@ func (luo *LinkUpdateOne) sqlSave(ctx context.Context) (_node *Link, err error) 
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: link.FieldAccessedTimes,
-		})
-	}
-	if value, ok := luo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: link.FieldUpdatedAt,
 		})
 	}
 	_node = &Link{config: luo.config}

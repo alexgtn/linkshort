@@ -37,7 +37,6 @@ type LinkMutation struct {
 	accessed_times    *int
 	addaccessed_times *int
 	created_at        *time.Time
-	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	done              bool
 	oldValue          func(context.Context) (*Link, error)
@@ -270,42 +269,6 @@ func (m *LinkMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (m *LinkMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *LinkMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Link entity.
-// If the Link object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *LinkMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // Where appends a list predicates to the LinkMutation builder.
 func (m *LinkMutation) Where(ps ...predicate.Link) {
 	m.predicates = append(m.predicates, ps...)
@@ -325,7 +288,7 @@ func (m *LinkMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LinkMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 3)
 	if m.long_uri != nil {
 		fields = append(fields, link.FieldLongURI)
 	}
@@ -334,9 +297,6 @@ func (m *LinkMutation) Fields() []string {
 	}
 	if m.created_at != nil {
 		fields = append(fields, link.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, link.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -352,8 +312,6 @@ func (m *LinkMutation) Field(name string) (ent.Value, bool) {
 		return m.AccessedTimes()
 	case link.FieldCreatedAt:
 		return m.CreatedAt()
-	case link.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -369,8 +327,6 @@ func (m *LinkMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAccessedTimes(ctx)
 	case link.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case link.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Link field %s", name)
 }
@@ -400,13 +356,6 @@ func (m *LinkMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
-		return nil
-	case link.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Link field %s", name)
@@ -480,9 +429,6 @@ func (m *LinkMutation) ResetField(name string) error {
 		return nil
 	case link.FieldCreatedAt:
 		m.ResetCreatedAt()
-		return nil
-	case link.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Link field %s", name)

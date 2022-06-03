@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -26,7 +22,64 @@ import (
 
 var httpPort = flag.Int("http-port", 8080, "The HTTP server port")
 
-// ripped from http.Redirect implementation :P
+// httpCmd starts the gRPC gateway
+var httpCmd = &cobra.Command{
+	Use:   "http",
+	Short: "gRPC HTTP gateway",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("http called")
+
+		ctx := context.Background()
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+
+		// Register gRPC server endpoint
+		mux := runtime.NewServeMux(
+			runtime.WithForwardResponseOption(redirectResponseModifier),
+		)
+		opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+		// assuming here the gRPC server is running on the same host, hence localhost
+		err := pb.RegisterLinkshortServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", *grpcPort), opts)
+		if err != nil {
+			log.Fatalf("failed to register gRPC gateway: %v", err)
+		}
+
+		// serve documentation
+		err = mux.HandlePath("GET", "/api/docs", serveDocs)
+		if err != nil {
+			log.Fatalf("failed to register docs handler: %v", err)
+		}
+
+		// Start HTTP server (and proxy calls to gRPC server endpoint)
+		err = http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), mux)
+		if err != nil {
+			log.Fatalf("failed to start gRPC gateway: %v", err)
+		}
+	},
+}
+
+// redirectResponseModifier sets HTTP redirect headers for the redirect response
+func redirectResponseModifier(_ context.Context, w http.ResponseWriter, p proto.Message) error {
+	redirectReply, ok := p.(*pb.RedirectReply)
+	if ok {
+		w.Header().Set("Location", hexEscapeNonASCII(redirectReply.LongUri))
+		w.WriteHeader(http.StatusMovedPermanently)
+
+		_, err := w.Write([]byte(redirectReply.LongUri))
+		if err != nil {
+			log.Printf("error writing redirect response: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// serveDocs serves documentation
+func serveDocs(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	http.ServeFile(w, r, "docs/index.html")
+}
+
+// hexEscapeNonASCII ripped from http.Redirect implementation :P
 func hexEscapeNonASCII(s string) string {
 	newLen := 0
 	for i := 0; i < len(s); i++ {
@@ -49,59 +102,6 @@ func hexEscapeNonASCII(s string) string {
 		}
 	}
 	return string(b)
-}
-
-func httpResponseModifier(_ context.Context, w http.ResponseWriter, p proto.Message) error {
-	redirectReply, ok := p.(*pb.RedirectReply)
-	if ok {
-		w.Header().Set("Location", hexEscapeNonASCII(redirectReply.LongUri))
-		w.WriteHeader(http.StatusMovedPermanently)
-
-		_, err := w.Write([]byte(redirectReply.LongUri))
-		if err != nil {
-			log.Printf("error writing redirect response: %v", err)
-		}
-	}
-
-	return nil
-}
-
-// mainCmd represents the main command
-var httpCmd = &cobra.Command{
-	Use:   "http",
-	Short: "gRPC HTTP gateway",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("http called")
-
-		ctx := context.Background()
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-
-		// Register gRPC server endpoint
-		// Note: Make sure the gRPC server is running properly and accessible
-		mux := runtime.NewServeMux(
-			runtime.WithForwardResponseOption(httpResponseModifier),
-		)
-		opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-		err := pb.RegisterLinkshortServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", *port), opts)
-		if err != nil {
-			log.Fatalf("failed to register gRPC gateway: %v", err)
-		}
-
-		// serve documentation
-		err = mux.HandlePath("GET", "/api/docs", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-			http.ServeFile(w, r, "docs/index.html")
-		})
-		if err != nil {
-			log.Fatalf("failed to register docs handler: %v", err)
-		}
-
-		// Start HTTP server (and proxy calls to gRPC server endpoint)
-		err = http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), mux)
-		if err != nil {
-			log.Fatalf("failed to start gRPC gateway: %v", err)
-		}
-	},
 }
 
 func init() {

@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -17,7 +13,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/alexgtn/go-linkshort/infra/repository/user"
+	"github.com/alexgtn/go-linkshort/infra/repository/link"
 	"github.com/alexgtn/go-linkshort/infra/sqlite"
 	pb "github.com/alexgtn/go-linkshort/proto"
 	"github.com/alexgtn/go-linkshort/usecase"
@@ -26,25 +22,18 @@ import (
 	"google.golang.org/grpc"
 )
 
-var port = flag.Int("port", 50051, "The server port")
+var grpcPort = flag.Int("port", 50051, "The server port")
 
-// mainCmd represents the main command
+// mainCmd starts the gRPC server
 var mainCmd = &cobra.Command{
-	Use:   "main",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use: "main",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("main called")
 
 		client := sqlite.OpenEnt(cfg.DatabaseURL)
 		flag.Parse()
 
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
@@ -70,9 +59,9 @@ to quickly create a Cobra application.`,
 		))
 
 		// dependency injection
-		userRepo := user.NewUser(client)
-		userUsecase := usecase.NewUserService(userRepo, cfg.BaseURL)
-		pb.RegisterLinkshortServiceServer(s, userUsecase)
+		linkRepo := link.NewLinkRepo(client)
+		linkUsecase := usecase.NewLinkService(linkRepo, cfg.BaseURL)
+		pb.RegisterLinkshortServiceServer(s, linkUsecase)
 
 		log.Printf("server listening at %v", lis.Addr())
 

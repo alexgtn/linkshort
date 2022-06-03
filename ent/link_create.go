@@ -54,20 +54,6 @@ func (lc *LinkCreate) SetNillableCreatedAt(t *time.Time) *LinkCreate {
 	return lc
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (lc *LinkCreate) SetUpdatedAt(t time.Time) *LinkCreate {
-	lc.mutation.SetUpdatedAt(t)
-	return lc
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (lc *LinkCreate) SetNillableUpdatedAt(t *time.Time) *LinkCreate {
-	if t != nil {
-		lc.SetUpdatedAt(*t)
-	}
-	return lc
-}
-
 // Mutation returns the LinkMutation object of the builder.
 func (lc *LinkCreate) Mutation() *LinkMutation {
 	return lc.mutation
@@ -147,10 +133,6 @@ func (lc *LinkCreate) defaults() {
 		v := link.DefaultCreatedAt()
 		lc.mutation.SetCreatedAt(v)
 	}
-	if _, ok := lc.mutation.UpdatedAt(); !ok {
-		v := link.DefaultUpdatedAt()
-		lc.mutation.SetUpdatedAt(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -173,9 +155,6 @@ func (lc *LinkCreate) check() error {
 	}
 	if _, ok := lc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Link.created_at"`)}
-	}
-	if _, ok := lc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Link.updated_at"`)}
 	}
 	return nil
 }
@@ -227,14 +206,6 @@ func (lc *LinkCreate) createSpec() (*Link, *sqlgraph.CreateSpec) {
 			Column: link.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
-	}
-	if value, ok := lc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: link.FieldUpdatedAt,
-		})
-		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }
