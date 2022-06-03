@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	"github.com/alexgtn/go-linkshort/ent"
 	"github.com/alexgtn/go-linkshort/infra/repository/link"
 	"github.com/alexgtn/go-linkshort/infra/sqlite"
 	pb "github.com/alexgtn/go-linkshort/proto"
@@ -31,6 +32,12 @@ var mainCmd = &cobra.Command{
 		fmt.Println("main called")
 
 		client := sqlite.OpenEnt(cfg.DatabaseURL)
+		defer func(client *ent.Client) {
+			err := client.Close()
+			if err != nil {
+				log.Fatal("error closing client")
+			}
+		}(client)
 		flag.Parse()
 
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
