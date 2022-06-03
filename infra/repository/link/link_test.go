@@ -43,7 +43,7 @@ func TestLinkRepo_Create(t *testing.T) {
 	_, err = r.Create(context.Background(), long)
 	assert.Error(t, err)
 
-	existing, err := r.GetOne(context.Background(), long)
+	existing, err := r.GetOneByLongURL(context.Background(), long)
 	assert.NoError(t, err)
 
 	assert.Equal(t, existing.LongURL(), long)
@@ -73,10 +73,10 @@ func TestLinkRepo_GetOne(t *testing.T) {
 	l, err := r.Create(context.Background(), long)
 	assert.NoError(t, err)
 
-	existing, err := r.GetOne(context.Background(), l.LongURL())
+	existing, err := r.GetOneByLongURL(context.Background(), l.LongURL())
 	assert.NoError(t, err)
 	assert.Equal(t, existing.LongURL(), long)
 
-	_, err = r.GetOne(context.Background(), "nonexistent")
+	_, err = r.GetOneByLongURL(context.Background(), "nonexistent")
 	assert.Error(t, err)
 }
