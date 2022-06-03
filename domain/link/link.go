@@ -1,11 +1,12 @@
 package link
 
 import (
-	"encoding/base64"
 	"errors"
 	"time"
 
 	errors2 "github.com/pkg/errors"
+
+	"github.com/alexgtn/go-linkshort/common/encoding"
 )
 
 const MaxLen = 2048
@@ -32,7 +33,7 @@ func NewLink(id int, long string, createdAt time.Time) (*Link, error) {
 		return nil, errors2.Wrap(errLink, "id is not positive")
 	}
 
-	short := base64.RawStdEncoding.EncodeToString([]byte(long))
+	short := encoding.ToBase62(long)
 
 	return &Link{id, short, long, 0, createdAt}, nil
 }
