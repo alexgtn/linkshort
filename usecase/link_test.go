@@ -47,11 +47,30 @@ func (m *mockLinkRepo) Create(ctx context.Context, long string) (*link.Link, err
 	return l, nil
 }
 
-func (m *mockLinkRepo) GetOne(ctx context.Context, long string) (*link.Link, error) {
+func (m *mockLinkRepo) GetOneByLongURL(ctx context.Context, long string) (*link.Link, error) {
 	l, ok := lo.Find(m.links, func(l *link.Link) bool { return l.LongURL() == long })
 	if !ok {
 		return nil, fmt.Errorf("link not found %s", long)
 	}
+	return l, nil
+}
+
+func (m *mockLinkRepo) GetOneByShortPath(ctx context.Context, short string) (*link.Link, error) {
+	l, ok := lo.Find(m.links, func(l *link.Link) bool { return l.ShortPath() == short })
+	if !ok {
+		return nil, fmt.Errorf("link not found %s", short)
+	}
+	return l, nil
+}
+
+func (m *mockLinkRepo) SetShortPath(ctx context.Context, id int, path string) (*link.Link, error) {
+	l, ok := lo.Find(m.links, func(l *link.Link) bool { return l.ID() == id })
+	if !ok {
+		return nil, fmt.Errorf("link not found %s", long)
+	}
+
+	l.SetShortPath(path)
+
 	return l, nil
 }
 
@@ -69,9 +88,9 @@ func createUriOverMaxLen(maxLen int, baseURL string) string {
 }
 
 var (
-	baseURL         = "http://localhost/"
+	baseURL         = "http://localhost"
 	long            = "https://jsonplaceholder.typicode.com/albums"
-	short           = "abcde"
+	short           = "n"
 	existingLink, _ = link.NewLink(1, long, time.Now())
 )
 
@@ -99,7 +118,7 @@ func TestService_Create(t *testing.T) {
 			name:    "create link with whitespace",
 			svc:     NewLinkService(newMockRepo(), baseURL),
 			long:    fmt.Sprintf("   %s   ", long),
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "error empty link",
@@ -131,9 +150,9 @@ func TestService_Create(t *testing.T) {
 			}
 			assert.NoError(t, err)
 			// correct prefix
-			assert.True(t, strings.HasPrefix(gotLink.ShortUri, baseURL))
+			assert.True(t, strings.HasPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL)))
 			// is alphanumeric
-			short := strings.TrimPrefix(gotLink.ShortUri, baseURL)
+			short := strings.TrimPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL))
 			assert.NotEmpty(t, short)
 			assert.True(t, govalidator.IsAlphanumeric(short))
 			// redirects to original long uri
@@ -169,7 +188,7 @@ func TestService_Create(t *testing.T) {
 			LongUri: long,
 		})
 		assert.NoError(t, err)
-		assert.Equal(t, l.ShortUri, existingLink.ShortPath())
+		assert.Equal(t, l.ShortUri, baseURL+"/"+existingLink.ShortPath())
 	})
 }
 
@@ -186,12 +205,6 @@ func TestService_Redirect(t *testing.T) {
 			name:    "redirect",
 			svc:     NewLinkService(repoWithLink, baseURL),
 			short:   short,
-			wantErr: false,
-		},
-		{
-			name:    "redirect with whitespace",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			short:   fmt.Sprintf("   %s   ", short),
 			wantErr: false,
 		},
 		{
@@ -221,25 +234,16 @@ func TestService_Redirect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotLink, err := tt.svc.Create(context.Background(), &pb.CreateLinkRequest{
-				LongUri: tt.short,
+			gotLink, err := tt.svc.Redirect(context.Background(), &pb.RedirectRequest{
+				ShortPath: tt.short,
 			})
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
 			}
-			assert.NoError(t, err)
-			// correct prefix
-			assert.True(t, strings.HasPrefix(gotLink.ShortUri, baseURL))
-			// is alphanumeric
-			short := strings.TrimPrefix(gotLink.ShortUri, baseURL)
-			assert.True(t, govalidator.IsAlphanumeric(short))
-			// redirects to original long uri
-			gotInitialLong, err := tt.svc.Redirect(context.Background(), &pb.RedirectRequest{
-				ShortPath: short,
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, tt.short, gotInitialLong.LongUri)
+
+			// returned original link
+			assert.Equal(t, gotLink.LongUri, long)
 		})
 	}
 }
