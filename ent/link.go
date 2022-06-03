@@ -16,6 +16,8 @@ type Link struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// ShortPath holds the value of the "short_path" field.
+	ShortPath string `json:"short_path,omitempty"`
 	// LongURI holds the value of the "long_uri" field.
 	LongURI string `json:"long_uri,omitempty"`
 	// AccessedTimes holds the value of the "accessed_times" field.
@@ -31,7 +33,7 @@ func (*Link) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case link.FieldID, link.FieldAccessedTimes:
 			values[i] = new(sql.NullInt64)
-		case link.FieldLongURI:
+		case link.FieldShortPath, link.FieldLongURI:
 			values[i] = new(sql.NullString)
 		case link.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -56,6 +58,12 @@ func (l *Link) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			l.ID = int(value.Int64)
+		case link.FieldShortPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field short_path", values[i])
+			} else if value.Valid {
+				l.ShortPath = value.String
+			}
 		case link.FieldLongURI:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field long_uri", values[i])
@@ -102,6 +110,8 @@ func (l *Link) String() string {
 	var builder strings.Builder
 	builder.WriteString("Link(")
 	builder.WriteString(fmt.Sprintf("id=%v", l.ID))
+	builder.WriteString(", short_path=")
+	builder.WriteString(l.ShortPath)
 	builder.WriteString(", long_uri=")
 	builder.WriteString(l.LongURI)
 	builder.WriteString(", accessed_times=")

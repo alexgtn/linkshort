@@ -33,6 +33,7 @@ type LinkMutation struct {
 	op                Op
 	typ               string
 	id                *int
+	short_path        *string
 	long_uri          *string
 	accessed_times    *int
 	addaccessed_times *int
@@ -139,6 +140,42 @@ func (m *LinkMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetShortPath sets the "short_path" field.
+func (m *LinkMutation) SetShortPath(s string) {
+	m.short_path = &s
+}
+
+// ShortPath returns the value of the "short_path" field in the mutation.
+func (m *LinkMutation) ShortPath() (r string, exists bool) {
+	v := m.short_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShortPath returns the old "short_path" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldShortPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShortPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShortPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShortPath: %w", err)
+	}
+	return oldValue.ShortPath, nil
+}
+
+// ResetShortPath resets all changes to the "short_path" field.
+func (m *LinkMutation) ResetShortPath() {
+	m.short_path = nil
 }
 
 // SetLongURI sets the "long_uri" field.
@@ -288,7 +325,10 @@ func (m *LinkMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LinkMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.short_path != nil {
+		fields = append(fields, link.FieldShortPath)
+	}
 	if m.long_uri != nil {
 		fields = append(fields, link.FieldLongURI)
 	}
@@ -306,6 +346,8 @@ func (m *LinkMutation) Fields() []string {
 // schema.
 func (m *LinkMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case link.FieldShortPath:
+		return m.ShortPath()
 	case link.FieldLongURI:
 		return m.LongURI()
 	case link.FieldAccessedTimes:
@@ -321,6 +363,8 @@ func (m *LinkMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *LinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case link.FieldShortPath:
+		return m.OldShortPath(ctx)
 	case link.FieldLongURI:
 		return m.OldLongURI(ctx)
 	case link.FieldAccessedTimes:
@@ -336,6 +380,13 @@ func (m *LinkMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *LinkMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case link.FieldShortPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShortPath(v)
+		return nil
 	case link.FieldLongURI:
 		v, ok := value.(string)
 		if !ok {
@@ -421,6 +472,9 @@ func (m *LinkMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *LinkMutation) ResetField(name string) error {
 	switch name {
+	case link.FieldShortPath:
+		m.ResetShortPath()
+		return nil
 	case link.FieldLongURI:
 		m.ResetLongURI()
 		return nil

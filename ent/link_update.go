@@ -27,9 +27,9 @@ func (lu *LinkUpdate) Where(ps ...predicate.Link) *LinkUpdate {
 	return lu
 }
 
-// SetLongURI sets the "long_uri" field.
-func (lu *LinkUpdate) SetLongURI(s string) *LinkUpdate {
-	lu.mutation.SetLongURI(s)
+// SetShortPath sets the "short_path" field.
+func (lu *LinkUpdate) SetShortPath(s string) *LinkUpdate {
+	lu.mutation.SetShortPath(s)
 	return lu
 }
 
@@ -121,9 +121,9 @@ func (lu *LinkUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (lu *LinkUpdate) check() error {
-	if v, ok := lu.mutation.LongURI(); ok {
-		if err := link.LongURIValidator(v); err != nil {
-			return &ValidationError{Name: "long_uri", err: fmt.Errorf(`ent: validator failed for field "Link.long_uri": %w`, err)}
+	if v, ok := lu.mutation.ShortPath(); ok {
+		if err := link.ShortPathValidator(v); err != nil {
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
 		}
 	}
 	if v, ok := lu.mutation.AccessedTimes(); ok {
@@ -152,11 +152,11 @@ func (lu *LinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := lu.mutation.LongURI(); ok {
+	if value, ok := lu.mutation.ShortPath(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: link.FieldLongURI,
+			Column: link.FieldShortPath,
 		})
 	}
 	if value, ok := lu.mutation.AccessedTimes(); ok {
@@ -192,9 +192,9 @@ type LinkUpdateOne struct {
 	mutation *LinkMutation
 }
 
-// SetLongURI sets the "long_uri" field.
-func (luo *LinkUpdateOne) SetLongURI(s string) *LinkUpdateOne {
-	luo.mutation.SetLongURI(s)
+// SetShortPath sets the "short_path" field.
+func (luo *LinkUpdateOne) SetShortPath(s string) *LinkUpdateOne {
+	luo.mutation.SetShortPath(s)
 	return luo
 }
 
@@ -293,9 +293,9 @@ func (luo *LinkUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (luo *LinkUpdateOne) check() error {
-	if v, ok := luo.mutation.LongURI(); ok {
-		if err := link.LongURIValidator(v); err != nil {
-			return &ValidationError{Name: "long_uri", err: fmt.Errorf(`ent: validator failed for field "Link.long_uri": %w`, err)}
+	if v, ok := luo.mutation.ShortPath(); ok {
+		if err := link.ShortPathValidator(v); err != nil {
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
 		}
 	}
 	if v, ok := luo.mutation.AccessedTimes(); ok {
@@ -341,11 +341,11 @@ func (luo *LinkUpdateOne) sqlSave(ctx context.Context) (_node *Link, err error) 
 			}
 		}
 	}
-	if value, ok := luo.mutation.LongURI(); ok {
+	if value, ok := luo.mutation.ShortPath(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: link.FieldLongURI,
+			Column: link.FieldShortPath,
 		})
 	}
 	if value, ok := luo.mutation.AccessedTimes(); ok {

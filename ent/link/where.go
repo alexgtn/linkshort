@@ -92,6 +92,13 @@ func IDLTE(id int) predicate.Link {
 	})
 }
 
+// ShortPath applies equality check predicate on the "short_path" field. It's identical to ShortPathEQ.
+func ShortPath(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldShortPath), v))
+	})
+}
+
 // LongURI applies equality check predicate on the "long_uri" field. It's identical to LongURIEQ.
 func LongURI(v string) predicate.Link {
 	return predicate.Link(func(s *sql.Selector) {
@@ -110,6 +117,117 @@ func AccessedTimes(v int) predicate.Link {
 func CreatedAt(v time.Time) predicate.Link {
 	return predicate.Link(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+	})
+}
+
+// ShortPathEQ applies the EQ predicate on the "short_path" field.
+func ShortPathEQ(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathNEQ applies the NEQ predicate on the "short_path" field.
+func ShortPathNEQ(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathIn applies the In predicate on the "short_path" field.
+func ShortPathIn(vs ...string) predicate.Link {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Link(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldShortPath), v...))
+	})
+}
+
+// ShortPathNotIn applies the NotIn predicate on the "short_path" field.
+func ShortPathNotIn(vs ...string) predicate.Link {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Link(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldShortPath), v...))
+	})
+}
+
+// ShortPathGT applies the GT predicate on the "short_path" field.
+func ShortPathGT(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathGTE applies the GTE predicate on the "short_path" field.
+func ShortPathGTE(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathLT applies the LT predicate on the "short_path" field.
+func ShortPathLT(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathLTE applies the LTE predicate on the "short_path" field.
+func ShortPathLTE(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathContains applies the Contains predicate on the "short_path" field.
+func ShortPathContains(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathHasPrefix applies the HasPrefix predicate on the "short_path" field.
+func ShortPathHasPrefix(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathHasSuffix applies the HasSuffix predicate on the "short_path" field.
+func ShortPathHasSuffix(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathEqualFold applies the EqualFold predicate on the "short_path" field.
+func ShortPathEqualFold(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldShortPath), v))
+	})
+}
+
+// ShortPathContainsFold applies the ContainsFold predicate on the "short_path" field.
+func ShortPathContainsFold(v string) predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldShortPath), v))
 	})
 }
 

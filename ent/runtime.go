@@ -15,8 +15,26 @@ import (
 func init() {
 	linkFields := schema.Link{}.Fields()
 	_ = linkFields
+	// linkDescShortPath is the schema descriptor for short_path field.
+	linkDescShortPath := linkFields[0].Descriptor()
+	// link.ShortPathValidator is a validator for the "short_path" field. It is called by the builders before save.
+	link.ShortPathValidator = func() func(string) error {
+		validators := linkDescShortPath.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(short_path string) error {
+			for _, fn := range fns {
+				if err := fn(short_path); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// linkDescLongURI is the schema descriptor for long_uri field.
-	linkDescLongURI := linkFields[0].Descriptor()
+	linkDescLongURI := linkFields[1].Descriptor()
 	// link.LongURIValidator is a validator for the "long_uri" field. It is called by the builders before save.
 	link.LongURIValidator = func() func(string) error {
 		validators := linkDescLongURI.Validators
@@ -34,13 +52,13 @@ func init() {
 		}
 	}()
 	// linkDescAccessedTimes is the schema descriptor for accessed_times field.
-	linkDescAccessedTimes := linkFields[1].Descriptor()
+	linkDescAccessedTimes := linkFields[2].Descriptor()
 	// link.DefaultAccessedTimes holds the default value on creation for the accessed_times field.
 	link.DefaultAccessedTimes = linkDescAccessedTimes.Default.(int)
 	// link.AccessedTimesValidator is a validator for the "accessed_times" field. It is called by the builders before save.
 	link.AccessedTimesValidator = linkDescAccessedTimes.Validators[0].(func(int) error)
 	// linkDescCreatedAt is the schema descriptor for created_at field.
-	linkDescCreatedAt := linkFields[2].Descriptor()
+	linkDescCreatedAt := linkFields[3].Descriptor()
 	// link.DefaultCreatedAt holds the default value on creation for the created_at field.
 	link.DefaultCreatedAt = linkDescCreatedAt.Default.(func() time.Time)
 }

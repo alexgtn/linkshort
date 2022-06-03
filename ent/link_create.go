@@ -20,6 +20,12 @@ type LinkCreate struct {
 	hooks    []Hook
 }
 
+// SetShortPath sets the "short_path" field.
+func (lc *LinkCreate) SetShortPath(s string) *LinkCreate {
+	lc.mutation.SetShortPath(s)
+	return lc
+}
+
 // SetLongURI sets the "long_uri" field.
 func (lc *LinkCreate) SetLongURI(s string) *LinkCreate {
 	lc.mutation.SetLongURI(s)
@@ -137,6 +143,14 @@ func (lc *LinkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lc *LinkCreate) check() error {
+	if _, ok := lc.mutation.ShortPath(); !ok {
+		return &ValidationError{Name: "short_path", err: errors.New(`ent: missing required field "Link.short_path"`)}
+	}
+	if v, ok := lc.mutation.ShortPath(); ok {
+		if err := link.ShortPathValidator(v); err != nil {
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
+		}
+	}
 	if _, ok := lc.mutation.LongURI(); !ok {
 		return &ValidationError{Name: "long_uri", err: errors.New(`ent: missing required field "Link.long_uri"`)}
 	}
@@ -183,6 +197,14 @@ func (lc *LinkCreate) createSpec() (*Link, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := lc.mutation.ShortPath(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: link.FieldShortPath,
+		})
+		_node.ShortPath = value
+	}
 	if value, ok := lc.mutation.LongURI(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,

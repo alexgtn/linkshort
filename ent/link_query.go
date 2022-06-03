@@ -253,12 +253,12 @@ func (lq *LinkQuery) Clone() *LinkQuery {
 // Example:
 //
 //	var v []struct {
-//		LongURI string `json:"long_uri,omitempty"`
+//		ShortPath string `json:"short_path,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Link.Query().
-//		GroupBy(link.FieldLongURI).
+//		GroupBy(link.FieldShortPath).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -282,11 +282,11 @@ func (lq *LinkQuery) GroupBy(field string, fields ...string) *LinkGroupBy {
 // Example:
 //
 //	var v []struct {
-//		LongURI string `json:"long_uri,omitempty"`
+//		ShortPath string `json:"short_path,omitempty"`
 //	}
 //
 //	client.Link.Query().
-//		Select(link.FieldLongURI).
+//		Select(link.FieldShortPath).
 //		Scan(ctx, &v)
 //
 func (lq *LinkQuery) Select(fields ...string) *LinkSelect {
