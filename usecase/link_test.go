@@ -111,13 +111,13 @@ func TestService_Create(t *testing.T) {
 			name:    "error is not uri",
 			svc:     NewLinkService(newMockRepo(), baseURL),
 			long:    "isnoturi.com",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "errror long is greater than max len",
 			svc:     NewLinkService(newMockRepo(), baseURL),
 			long:    createUriOverMaxLen(link.MaxLen, baseURL),
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range invididualLinkTests {
