@@ -33,6 +33,8 @@ func (s *service) Redirect(context.Context, *pb.RedirectRequest) (*pb.RedirectRe
 }
 
 func (s *service) Create(context.Context, *pb.CreateLinkRequest) (*pb.CreateLinkReply, error) {
+	// check valid link n stuff
+	// trim input
 	return &pb.CreateLinkReply{
 		ShortUri: fmt.Sprintf("%s/qqq", s.baseURL),
 	}, nil
