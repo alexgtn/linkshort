@@ -26,6 +26,14 @@ func (lc *LinkCreate) SetShortPath(s string) *LinkCreate {
 	return lc
 }
 
+// SetNillableShortPath sets the "short_path" field if the given value is not nil.
+func (lc *LinkCreate) SetNillableShortPath(s *string) *LinkCreate {
+	if s != nil {
+		lc.SetShortPath(*s)
+	}
+	return lc
+}
+
 // SetLongURI sets the "long_uri" field.
 func (lc *LinkCreate) SetLongURI(s string) *LinkCreate {
 	lc.mutation.SetLongURI(s)
@@ -143,9 +151,6 @@ func (lc *LinkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lc *LinkCreate) check() error {
-	if _, ok := lc.mutation.ShortPath(); !ok {
-		return &ValidationError{Name: "short_path", err: errors.New(`ent: missing required field "Link.short_path"`)}
-	}
 	if v, ok := lc.mutation.ShortPath(); ok {
 		if err := link.ShortPathValidator(v); err != nil {
 			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}

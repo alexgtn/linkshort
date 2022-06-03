@@ -11,7 +11,7 @@ var (
 	// LinksColumns holds the columns for the "links" table.
 	LinksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "short_path", Type: field.TypeString, Unique: true, Size: 2048},
+		{Name: "short_path", Type: field.TypeString, Unique: true, Nullable: true, Size: 2048},
 		{Name: "long_uri", Type: field.TypeString, Unique: true, Size: 2048},
 		{Name: "accessed_times", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},

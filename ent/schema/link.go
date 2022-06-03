@@ -17,7 +17,7 @@ type Link struct {
 // Fields of the Link.
 func (Link) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("short_path").Unique().MaxLen(link.MaxLen),
+		field.String("short_path").Optional().Unique().MaxLen(link.MaxLen),
 		field.String("long_uri").NotEmpty().Unique().Immutable().MaxLen(link.MaxLen),
 		field.Int("accessed_times").Default(0).NonNegative(),
 		field.Time("created_at").Default(time.Now).Immutable(),

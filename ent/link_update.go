@@ -33,6 +33,20 @@ func (lu *LinkUpdate) SetShortPath(s string) *LinkUpdate {
 	return lu
 }
 
+// SetNillableShortPath sets the "short_path" field if the given value is not nil.
+func (lu *LinkUpdate) SetNillableShortPath(s *string) *LinkUpdate {
+	if s != nil {
+		lu.SetShortPath(*s)
+	}
+	return lu
+}
+
+// ClearShortPath clears the value of the "short_path" field.
+func (lu *LinkUpdate) ClearShortPath() *LinkUpdate {
+	lu.mutation.ClearShortPath()
+	return lu
+}
+
 // SetAccessedTimes sets the "accessed_times" field.
 func (lu *LinkUpdate) SetAccessedTimes(i int) *LinkUpdate {
 	lu.mutation.ResetAccessedTimes()
@@ -159,6 +173,12 @@ func (lu *LinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: link.FieldShortPath,
 		})
 	}
+	if lu.mutation.ShortPathCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: link.FieldShortPath,
+		})
+	}
 	if value, ok := lu.mutation.AccessedTimes(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -195,6 +215,20 @@ type LinkUpdateOne struct {
 // SetShortPath sets the "short_path" field.
 func (luo *LinkUpdateOne) SetShortPath(s string) *LinkUpdateOne {
 	luo.mutation.SetShortPath(s)
+	return luo
+}
+
+// SetNillableShortPath sets the "short_path" field if the given value is not nil.
+func (luo *LinkUpdateOne) SetNillableShortPath(s *string) *LinkUpdateOne {
+	if s != nil {
+		luo.SetShortPath(*s)
+	}
+	return luo
+}
+
+// ClearShortPath clears the value of the "short_path" field.
+func (luo *LinkUpdateOne) ClearShortPath() *LinkUpdateOne {
+	luo.mutation.ClearShortPath()
 	return luo
 }
 
@@ -345,6 +379,12 @@ func (luo *LinkUpdateOne) sqlSave(ctx context.Context) (_node *Link, err error) 
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: link.FieldShortPath,
+		})
+	}
+	if luo.mutation.ShortPathCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: link.FieldShortPath,
 		})
 	}

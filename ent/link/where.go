@@ -217,6 +217,20 @@ func ShortPathHasSuffix(v string) predicate.Link {
 	})
 }
 
+// ShortPathIsNil applies the IsNil predicate on the "short_path" field.
+func ShortPathIsNil() predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldShortPath)))
+	})
+}
+
+// ShortPathNotNil applies the NotNil predicate on the "short_path" field.
+func ShortPathNotNil() predicate.Link {
+	return predicate.Link(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldShortPath)))
+	})
+}
+
 // ShortPathEqualFold applies the EqualFold predicate on the "short_path" field.
 func ShortPathEqualFold(v string) predicate.Link {
 	return predicate.Link(func(s *sql.Selector) {
