@@ -2,6 +2,8 @@ package link
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 
 	errors2 "github.com/pkg/errors"
@@ -33,9 +35,13 @@ func NewLink(id int, long string, createdAt time.Time) (*Link, error) {
 		return nil, errors2.Wrap(errLink, "id is not positive")
 	}
 
-	short := encoding.ToBase62(long)
+	short := generateShortPath(id)
 
 	return &Link{id, short, long, 0, createdAt}, nil
+}
+
+func generateShortPath(id int) string {
+	return strings.ToLower(encoding.ToBase62([]byte(strconv.Itoa(id))))
 }
 
 func (u *Link) ID() int {
@@ -44,6 +50,10 @@ func (u *Link) ID() int {
 
 func (u *Link) ShortPath() string {
 	return u.shortPath
+}
+
+func (u *Link) SetShortPath(path string) {
+	u.shortPath = path
 }
 
 func (u *Link) LongURL() string {
