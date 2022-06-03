@@ -20,7 +20,31 @@ func NewLinkRepo(c *ent.Client) *linkRepo {
 	return &linkRepo{c}
 }
 
-func (r *linkRepo) GetOne(ctx context.Context, long string) (*link.Link, error) {
+func (r *linkRepo) GetOneByShortPath(ctx context.Context, short string) (*link.Link, error) {
+	l, err := r.client.Link.
+		Query().
+		Where(link2.ShortPath(short)).
+		Only(ctx)
+	if err != nil {
+		switch err.(type) {
+		case *ent.NotFoundError:
+			return nil, errors2.WrapErrNotFound(err)
+		case *ent.NotSingularError:
+			return nil, errors2.WrapErrNotSingular(err)
+		default:
+			return nil, errors.Wrapf(err, "could not get link by short path %s", short)
+		}
+	}
+
+	dto, err := link.NewLink(l.ID, l.LongURI, l.CreatedAt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create link %s", l.LongURI)
+	}
+
+	return dto, nil
+}
+
+func (r *linkRepo) GetOneByLongURL(ctx context.Context, long string) (*link.Link, error) {
 	l, err := r.client.Link.
 		Query().
 		Where(link2.LongURI(long)).
@@ -39,6 +63,30 @@ func (r *linkRepo) GetOne(ctx context.Context, long string) (*link.Link, error) 
 	dto, err := link.NewLink(l.ID, l.LongURI, l.CreatedAt)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create link %s", l.LongURI)
+	}
+
+	return dto, nil
+}
+
+func (r *linkRepo) SetShortPath(ctx context.Context, id int, path string) (*link.Link, error) {
+	l, err := r.client.Link.
+		UpdateOneID(id).
+		SetShortPath(path).
+		Save(ctx)
+	if err != nil {
+		switch err.(type) {
+		case *ent.NotFoundError:
+			return nil, errors2.WrapErrNotFound(err)
+		case *ent.NotSingularError:
+			return nil, errors2.WrapErrNotSingular(err)
+		default:
+			return nil, errors.Wrapf(err, "could not update link %d", id)
+		}
+	}
+
+	dto, err := link.NewLink(l.ID, l.LongURI, l.CreatedAt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to update link %s", l.LongURI)
 	}
 
 	return dto, nil
