@@ -11,3 +11,9 @@ Run tests with coverage
 ```
 go test ./... -cover
 ```
+
+Run fuzz tests
+
+```
+go test github.com/alexgtn/go-linkshort/usecase -fuzz=FuzzService_Create
+```

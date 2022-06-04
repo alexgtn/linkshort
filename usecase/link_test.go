@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"testing"
@@ -94,6 +95,43 @@ var (
 	existingLink, _ = link.NewLink(1, long, time.Now())
 )
 
+func FuzzService_Create(f *testing.F) {
+	// individual link test
+	invididualLinkTests := []string{"abc123", "a1b2b3", "Ba_1bc-E"}
+	for _, t := range invididualLinkTests {
+		f.Add(t)
+	}
+
+	f.Fuzz(func(t *testing.T, in string) {
+		inUrlEnc := base64.URLEncoding.EncodeToString([]byte(in))
+
+		svc := NewLinkService(newMockRepo(), baseURL)
+
+		long := baseURL + "/" + inUrlEnc
+		// make sure url len withing boundaries
+		if link.MaxLen < len(long) {
+			long = long[:link.MaxLen-len(baseURL)-1]
+		}
+
+		gotLink, err := svc.Create(context.Background(), &pb.CreateLinkRequest{
+			LongUri: long,
+		})
+		assert.NoError(t, err)
+		// correct prefix
+		assert.True(t, strings.HasPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL)))
+		// is alphanumeric
+		short := strings.TrimPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL))
+		assert.NotEmpty(t, short)
+		assert.True(t, govalidator.IsAlphanumeric(short))
+		// redirects to original long uri
+		gotInitialLong, err := svc.Redirect(context.Background(), &pb.RedirectRequest{
+			ShortPath: short,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, long, gotInitialLong.LongUri)
+	})
+}
+
 func TestService_Create(t *testing.T) {
 	// individual link test
 	invididualLinkTests := []struct {
@@ -141,7 +179,7 @@ func TestService_Create(t *testing.T) {
 	}
 	for _, tt := range invididualLinkTests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotLink, err := tt.svc.Create(context.Background(), &pb.CreateLinkRequest{
+			_, err := tt.svc.Create(context.Background(), &pb.CreateLinkRequest{
 				LongUri: tt.long,
 			})
 			if tt.wantErr {
@@ -149,18 +187,6 @@ func TestService_Create(t *testing.T) {
 				return
 			}
 			assert.NoError(t, err)
-			// correct prefix
-			assert.True(t, strings.HasPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL)))
-			// is alphanumeric
-			short := strings.TrimPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL))
-			assert.NotEmpty(t, short)
-			assert.True(t, govalidator.IsAlphanumeric(short))
-			// redirects to original long uri
-			gotInitialLong, err := tt.svc.Redirect(context.Background(), &pb.RedirectRequest{
-				ShortPath: short,
-			})
-			assert.NoError(t, err)
-			assert.Equal(t, long, gotInitialLong.LongUri)
 		})
 	}
 
