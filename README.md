@@ -6,4 +6,8 @@
 
 ## LinkShort
 
-TODO
+Run tests with coverage
+
+```
+go test ./... -cover
+```
