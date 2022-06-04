@@ -13,10 +13,12 @@ import (
 	"github.com/alexgtn/go-linkshort/infra/sqlite"
 )
 
-var long = "https://jsonplaceholder.typicode.com/albums"
+const long = "https://jsonplaceholder.typicode.com/albums"
+
+const databaseUrl = "file:mockrepo?mode=memory&cache=shared&_fk=1"
 
 func TestLinkRepo_Create(t *testing.T) {
-	c := sqlite.OpenEnt("file:mockrepo?mode=memory&cache=shared&_fk=1")
+	c := sqlite.OpenEnt(databaseUrl)
 	defer func(client *ent.Client) {
 		err := client.Close()
 		if err != nil {
@@ -50,7 +52,7 @@ func TestLinkRepo_Create(t *testing.T) {
 }
 
 func TestLinkRepo_GetOne(t *testing.T) {
-	c := sqlite.OpenEnt("file:mockrepo?mode=memory&cache=shared&_fk=1")
+	c := sqlite.OpenEnt(databaseUrl)
 	defer func(client *ent.Client) {
 		err := client.Close()
 		if err != nil {
