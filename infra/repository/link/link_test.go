@@ -3,6 +3,7 @@ package link
 import (
 	"context"
 	"log"
+	"os"
 	"testing"
 
 	"entgo.io/ent/dialect/sql/schema"
@@ -17,28 +18,41 @@ const long = "https://jsonplaceholder.typicode.com/albums"
 
 const databaseUrl = "file:mockrepo?mode=memory&cache=shared&_fk=1"
 
-func TestLinkRepo_Create(t *testing.T) {
-	c := sqlite.OpenEnt(databaseUrl)
+var db *ent.Client
+
+func TestMain(m *testing.M) {
+	db = sqlite.OpenEnt(databaseUrl)
 	defer func(client *ent.Client) {
 		err := client.Close()
 		if err != nil {
 			log.Fatal("error closing client")
 		}
-	}(c)
+	}(db)
 
-	ctx := context.Background()
 	// Run migration.
-	err := c.Schema.Create(ctx,
+	err := db.Schema.Create(context.Background(),
 		schema.WithAtlas(true),
 		migrate.WithDropIndex(true),
 		migrate.WithDropColumn(true))
 	if err != nil {
-		t.Fatalf(err.Error())
+		log.Fatalf(err.Error())
 	}
 
-	r := NewLinkRepo(c)
+	code := m.Run()
+	os.Exit(code)
+}
 
-	_, err = r.Create(context.Background(), long)
+func cleanDB() {
+	_, err := db.Link.Delete().Exec(context.Background())
+	if err != nil {
+		log.Fatalf("failed to cleanup links table: %v", err)
+	}
+}
+
+func TestLinkRepo_Create(t *testing.T) {
+	r := NewLinkRepo(db)
+
+	_, err := r.Create(context.Background(), long)
 	assert.NoError(t, err)
 
 	// error on duplicates
@@ -49,28 +63,12 @@ func TestLinkRepo_Create(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, existing.LongURL(), long)
+
+	t.Cleanup(cleanDB)
 }
 
 func TestLinkRepo_GetOne(t *testing.T) {
-	c := sqlite.OpenEnt(databaseUrl)
-	defer func(client *ent.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Fatal("error closing client")
-		}
-	}(c)
-
-	ctx := context.Background()
-	// Run migration.
-	err := c.Schema.Create(ctx,
-		schema.WithAtlas(true),
-		migrate.WithDropIndex(true),
-		migrate.WithDropColumn(true))
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	r := NewLinkRepo(c)
+	r := NewLinkRepo(db)
 
 	l, err := r.Create(context.Background(), long)
 	assert.NoError(t, err)
@@ -81,4 +79,6 @@ func TestLinkRepo_GetOne(t *testing.T) {
 
 	_, err = r.GetOneByLongURL(context.Background(), "nonexistent")
 	assert.Error(t, err)
+
+	t.Cleanup(cleanDB)
 }
