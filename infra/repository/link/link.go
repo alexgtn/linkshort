@@ -74,14 +74,7 @@ func (r *linkRepo) SetShortPath(ctx context.Context, id int, path string) (*link
 		SetShortPath(path).
 		Save(ctx)
 	if err != nil {
-		switch err.(type) {
-		case *ent.NotFoundError:
-			return nil, errors2.WrapErrNotFound(err)
-		case *ent.NotSingularError:
-			return nil, errors2.WrapErrNotSingular(err)
-		default:
-			return nil, errors.Wrapf(err, "could not update link %d", id)
-		}
+		return nil, errors.Wrapf(err, "could not set short path for link %d", id)
 	}
 
 	dto, err := link.NewLink(l.ID, l.LongURI, l.CreatedAt)
@@ -98,14 +91,7 @@ func (r *linkRepo) Create(ctx context.Context, long string) (*link.Link, error) 
 		SetLongURI(long).
 		Save(ctx)
 	if err != nil {
-		switch err.(type) {
-		case *ent.NotFoundError:
-			return nil, errors2.WrapErrNotFound(err)
-		case *ent.NotSingularError:
-			return nil, errors2.WrapErrNotSingular(err)
-		default:
-			return nil, errors.Wrapf(err, "could not create link %s", long)
-		}
+		return nil, errors.Wrapf(err, "could not create link %s", long)
 	}
 
 	dto, err := link.NewLink(l.ID, l.LongURI, l.CreatedAt)
