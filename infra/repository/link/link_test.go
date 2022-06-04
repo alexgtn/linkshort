@@ -68,17 +68,38 @@ func TestLinkRepo_Create(t *testing.T) {
 }
 
 func TestLinkRepo_GetOne(t *testing.T) {
-	r := NewLinkRepo(db)
+	t.Run("get one by long URL", func(t *testing.T) {
+		r := NewLinkRepo(db)
 
-	l, err := r.Create(context.Background(), long)
-	assert.NoError(t, err)
+		l, err := r.Create(context.Background(), long)
+		assert.NoError(t, err)
 
-	existing, err := r.GetOneByLongURL(context.Background(), l.LongURL())
-	assert.NoError(t, err)
-	assert.Equal(t, existing.LongURL(), long)
+		existing, err := r.GetOneByLongURL(context.Background(), l.LongURL())
+		assert.NoError(t, err)
+		assert.Equal(t, existing.LongURL(), long)
 
-	_, err = r.GetOneByLongURL(context.Background(), "nonexistent")
-	assert.Error(t, err)
+		_, err = r.GetOneByLongURL(context.Background(), "nonexistent")
+		assert.Error(t, err)
 
-	t.Cleanup(cleanDB)
+		t.Cleanup(cleanDB)
+	})
+
+	t.Run("get one by short path", func(t *testing.T) {
+		r := NewLinkRepo(db)
+
+		l, err := r.Create(context.Background(), long)
+		assert.NoError(t, err)
+
+		_, err = r.SetShortPath(context.Background(), l.ID(), l.ShortPath())
+		assert.NoError(t, err)
+
+		existing, err := r.GetOneByShortPath(context.Background(), l.ShortPath())
+		assert.NoError(t, err)
+		assert.Equal(t, existing.LongURL(), long)
+
+		_, err = r.GetOneByShortPath(context.Background(), "nonexistent")
+		assert.Error(t, err)
+
+		t.Cleanup(cleanDB)
+	})
 }
