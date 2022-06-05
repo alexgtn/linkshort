@@ -58,8 +58,8 @@ func (s *service) Redirect(ctx context.Context, r *pb.RedirectRequest) (*pb.Redi
 	}, nil
 }
 
-// Create creates a short link (if not exists), otherwise returns existing link
-func (s *service) Create(ctx context.Context, r *pb.CreateLinkRequest) (*pb.CreateLinkReply, error) {
+// CreateLink creates a short link (if not exists), otherwise returns existing link
+func (s *service) CreateLink(ctx context.Context, r *pb.CreateLinkRequest) (*pb.CreateLinkReply, error) {
 	err := r.ValidateAll()
 	if err != nil {
 		return nil, errCreateLink(err, r.LongUri)
@@ -70,7 +70,13 @@ func (s *service) Create(ctx context.Context, r *pb.CreateLinkRequest) (*pb.Crea
 		// create link
 		newLink, err := s.linkRepo.Create(ctx, r.LongUri)
 		if err != nil {
-			return nil, errCreateLink(err, r.LongUri)
+			// try re-fetch existing
+			// mostly in highly concurrent scenarios
+			existingLink, err := s.linkRepo.GetOneByLongURL(ctx, r.LongUri)
+			if err != nil {
+				return nil, errCreateLink(err, r.LongUri)
+			}
+			newLink = existingLink
 		}
 
 		// set short path
