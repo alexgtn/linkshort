@@ -15,7 +15,7 @@ import (
 var cfg *config.Config
 
 var rootCmd = &cobra.Command{
-	Use: "supernova",
+	Use: "linkshort",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
