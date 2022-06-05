@@ -17,3 +17,16 @@ Run fuzz tests
 ```
 go test github.com/alexgtn/go-linkshort/usecase -fuzz=FuzzService_Create
 ```
+
+### System-level tests
+
+Make sure server is running
+
+```
+go run main.go main
+```
+
+Run burst tests. Launches 100x requests (create, redirect, create & redirect) concurrently.
+```
+go test -v -run Test_Main
+```
