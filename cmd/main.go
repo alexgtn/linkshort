@@ -27,7 +27,8 @@ var grpcPort = flag.Int("port", 50051, "The server port")
 
 // mainCmd starts the gRPC server
 var mainCmd = &cobra.Command{
-	Use: "main",
+	Use:   "main",
+	Short: "gRPC server",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("main called")
 
@@ -39,11 +40,6 @@ var mainCmd = &cobra.Command{
 			}
 		}(client)
 		flag.Parse()
-
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
 
 		// logging
 		zapconfig := zap.NewProductionConfig()
@@ -69,6 +65,11 @@ var mainCmd = &cobra.Command{
 		linkRepo := link.NewLinkRepo(client)
 		linkUsecase := usecase.NewLinkService(linkRepo, cfg.BaseURL)
 		pb.RegisterLinkshortServiceServer(s, linkUsecase)
+
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
 
 		log.Printf("server listening at %v", lis.Addr())
 

@@ -16,7 +16,8 @@ import (
 
 // executeMigrationCmd represents the executeMigration command
 var executeMigrationCmd = &cobra.Command{
-	Use: "execute-migration",
+	Use:   "execute-migration",
+	Short: "Runs migration against a local db",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("executing migration")
 		client := sqlite.OpenEnt(cfg.DatabaseURL)

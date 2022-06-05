@@ -19,7 +19,8 @@ import (
 
 // migrateCmd represents the migrate command
 var migrateCmd = &cobra.Command{
-	Use: "generate-migration",
+	Use:   "generate-migration",
+	Short: "Generate migration from schema",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("generating new migration")
 		// Load the graph.
