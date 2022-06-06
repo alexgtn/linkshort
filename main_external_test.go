@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"strings"
@@ -19,6 +20,13 @@ import (
 
 // Burst-test suite. Launches 100x requests (create, redirect, create & redirect) concurrently.
 func Test_Main(t *testing.T) {
+	flag.Parse()
+
+	if testing.Short() {
+		log.Printf("Skipping tests because of Short flag")
+		return
+	}
+
 	clientReqCount := 100
 
 	long := fmt.Sprintf("https://test.com/%s", uuid.NewString())
