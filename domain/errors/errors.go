@@ -1,33 +1,39 @@
 package errors
 
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
+
 type ErrNotFound struct {
-	error string
+	err error
 }
 
 func (e *ErrNotFound) Error() string {
-	return e.error
+	return e.err.Error()
 }
 
 func NewErrNotFound(err string) error {
-	return &ErrNotFound{error: err}
+	return &ErrNotFound{err: fmt.Errorf("error not found: %s", err)}
 }
 
 func WrapErrNotFound(err error) error {
-	return &ErrNotFound{error: err.Error()}
+	return &ErrNotFound{err: errors.Wrapf(err, "error not found: %s", err)}
 }
 
 type ErrNotSingular struct {
-	error string
+	err error
 }
 
 func (e *ErrNotSingular) Error() string {
-	return e.error
+	return e.err.Error()
 }
 
 func NewErrNotSingular(err string) error {
-	return &ErrNotSingular{error: err}
+	return &ErrNotSingular{err: fmt.Errorf("error not singular: %s", err)}
 }
 
 func WrapErrNotSingular(err error) error {
-	return &ErrNotSingular{error: err.Error()}
+	return &ErrNotSingular{err: errors.Wrapf(err, "error not singular: %s", err)}
 }
