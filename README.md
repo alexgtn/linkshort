@@ -6,6 +6,20 @@
 
 ## LinkShort
 
+```
+go build -o linkshort
+
+Usage:
+  linkshort [command]
+
+Available Commands:
+  completion         Generate the autocompletion script for the specified shell
+  execute-migration  Runs migration against a local db
+  generate-migration Generate migration from schema
+  http               gRPC HTTP gateway
+  main               gRPC server
+```
+
 Run tests with coverage
 
 ```
