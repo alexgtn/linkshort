@@ -77,7 +77,7 @@ func (m *mockLinkRepo) SetShortPath(ctx context.Context, id int, path string) (*
 
 type linkService interface {
 	Redirect(context.Context, *pb.RedirectRequest) (*pb.RedirectReply, error)
-	Create(context.Context, *pb.CreateLinkRequest) (*pb.CreateLinkReply, error)
+	CreateLink(context.Context, *pb.CreateLinkRequest) (*pb.CreateLinkReply, error)
 }
 
 func createUriOverMaxLen(maxLen int, baseURL string) string {
@@ -113,7 +113,7 @@ func FuzzService_Create(f *testing.F) {
 			long = long[:link.MaxLen-len(baseURL)-1]
 		}
 
-		gotLink, err := svc.Create(context.Background(), &pb.CreateLinkRequest{
+		gotLink, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 			LongUri: long,
 		})
 		assert.NoError(t, err)
@@ -179,7 +179,7 @@ func TestService_Create(t *testing.T) {
 	}
 	for _, tt := range invididualLinkTests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.svc.Create(context.Background(), &pb.CreateLinkRequest{
+			_, err := tt.svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 				LongUri: tt.long,
 			})
 			if tt.wantErr {
@@ -192,15 +192,15 @@ func TestService_Create(t *testing.T) {
 
 	t.Run("multiple inserts", func(t *testing.T) {
 		svc := NewLinkService(newMockRepo(), baseURL)
-		_, err := svc.Create(context.Background(), &pb.CreateLinkRequest{
+		_, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 			LongUri: long + "1",
 		})
 		assert.NoError(t, err)
-		_, err = svc.Create(context.Background(), &pb.CreateLinkRequest{
+		_, err = svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 			LongUri: long + "2",
 		})
 		assert.NoError(t, err)
-		_, err = svc.Create(context.Background(), &pb.CreateLinkRequest{
+		_, err = svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 			LongUri: long + "3",
 		})
 		assert.NoError(t, err)
@@ -210,7 +210,7 @@ func TestService_Create(t *testing.T) {
 		repoWithLink := newMockRepoWithSeed(existingLink)
 
 		svc := NewLinkService(repoWithLink, baseURL)
-		l, err := svc.Create(context.Background(), &pb.CreateLinkRequest{
+		l, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
 			LongUri: long,
 		})
 		assert.NoError(t, err)
