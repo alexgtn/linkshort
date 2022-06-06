@@ -293,10 +293,10 @@ func (m *RedirectRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetShortPath()) > 2048 {
+	if l := utf8.RuneCountInString(m.GetShortPath()); l < 1 || l > 2048 {
 		err := RedirectRequestValidationError{
 			field:  "ShortPath",
-			reason: "value length must be at most 2048 runes",
+			reason: "value length must be between 1 and 2048 runes, inclusive",
 		}
 		if !all {
 			return err

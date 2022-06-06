@@ -37,7 +37,7 @@ message CreateLinkReply {
 }
 
 message RedirectRequest {
-  string short_path = 1 [(validate.rules).string = {pattern:   "^[a-zA-Z0-9_]*$", max_len: 2048}];
+  string short_path = 1 [(validate.rules).string = {pattern:   "^[a-zA-Z0-9_]*$", min_len: 1, max_len: 2048}];
 }
 
 message RedirectReply {
