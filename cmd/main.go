@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
+	delivery "github.com/alexgtn/go-linkshort/delivery/grpc"
 	"github.com/alexgtn/go-linkshort/ent"
 	"github.com/alexgtn/go-linkshort/infra/repository/link"
 	"github.com/alexgtn/go-linkshort/infra/sqlite"
@@ -64,7 +65,8 @@ var mainCmd = &cobra.Command{
 		// dependency injection
 		linkRepo := link.NewLinkRepo(client)
 		linkUsecase := usecase.NewLinkService(linkRepo, cfg.BaseURL)
-		pb.RegisterLinkshortServiceServer(s, linkUsecase)
+		linkDelivery := delivery.NewLinkDeliveryGrpc(linkUsecase)
+		pb.RegisterLinkshortServiceServer(s, linkDelivery)
 
 		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
 		if err != nil {

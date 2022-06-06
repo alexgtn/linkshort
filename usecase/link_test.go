@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/alexgtn/go-linkshort/domain/link"
-	pb "github.com/alexgtn/go-linkshort/proto"
 )
 
 type mockLinkRepo struct {
@@ -76,16 +75,8 @@ func (m *mockLinkRepo) SetShortPath(ctx context.Context, id int, path string) (*
 }
 
 type linkService interface {
-	Redirect(context.Context, *pb.RedirectRequest) (*pb.RedirectReply, error)
-	CreateLink(context.Context, *pb.CreateLinkRequest) (*pb.CreateLinkReply, error)
-}
-
-func createUriOverMaxLen(maxLen int, baseURL string) string {
-	e := make([]rune, maxLen+1)
-	for i, _ := range e {
-		e[i] = 'e'
-	}
-	return baseURL + string(e)
+	Redirect(ctx context.Context, shortPath string) (string, error)
+	CreateLink(ctx context.Context, longURL string) (string, error)
 }
 
 var (
@@ -113,22 +104,18 @@ func FuzzService_Create(f *testing.F) {
 			long = long[:link.MaxLen-len(baseURL)-1]
 		}
 
-		gotLink, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-			LongUri: long,
-		})
+		gotLink, err := svc.CreateLink(context.Background(), long)
 		assert.NoError(t, err)
 		// correct prefix
-		assert.True(t, strings.HasPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL)))
+		assert.True(t, strings.HasPrefix(gotLink, fmt.Sprintf("%s/", baseURL)))
 		// is alphanumeric
-		short := strings.TrimPrefix(gotLink.ShortUri, fmt.Sprintf("%s/", baseURL))
+		short := strings.TrimPrefix(gotLink, fmt.Sprintf("%s/", baseURL))
 		assert.NotEmpty(t, short)
 		assert.True(t, govalidator.IsAlphanumeric(short))
 		// redirects to original long uri
-		gotInitialLong, err := svc.Redirect(context.Background(), &pb.RedirectRequest{
-			ShortPath: short,
-		})
+		gotInitialLong, err := svc.Redirect(context.Background(), short)
 		assert.NoError(t, err)
-		assert.Equal(t, long, gotInitialLong.LongUri)
+		assert.Equal(t, long, gotInitialLong)
 	})
 }
 
@@ -152,36 +139,10 @@ func TestService_Create(t *testing.T) {
 			long:    long,
 			wantErr: false,
 		},
-		{
-			name:    "create link with whitespace",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			long:    fmt.Sprintf("   %s   ", long),
-			wantErr: true,
-		},
-		{
-			name:    "error empty link",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			long:    "",
-			wantErr: true,
-		},
-		{
-			name:    "error is not uri",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			long:    "isnoturi.com",
-			wantErr: true,
-		},
-		{
-			name:    "errror long is greater than max len",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			long:    createUriOverMaxLen(link.MaxLen, baseURL),
-			wantErr: true,
-		},
 	}
 	for _, tt := range invididualLinkTests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-				LongUri: tt.long,
-			})
+			_, err := tt.svc.CreateLink(context.Background(), tt.long)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
@@ -192,17 +153,11 @@ func TestService_Create(t *testing.T) {
 
 	t.Run("multiple inserts", func(t *testing.T) {
 		svc := NewLinkService(newMockRepo(), baseURL)
-		_, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-			LongUri: long + "1",
-		})
+		_, err := svc.CreateLink(context.Background(), long+"1")
 		assert.NoError(t, err)
-		_, err = svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-			LongUri: long + "2",
-		})
+		_, err = svc.CreateLink(context.Background(), long+"2")
 		assert.NoError(t, err)
-		_, err = svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-			LongUri: long + "3",
-		})
+		_, err = svc.CreateLink(context.Background(), long+"3")
 		assert.NoError(t, err)
 	})
 
@@ -210,11 +165,9 @@ func TestService_Create(t *testing.T) {
 		repoWithLink := newMockRepoWithSeed(existingLink)
 
 		svc := NewLinkService(repoWithLink, baseURL)
-		l, err := svc.CreateLink(context.Background(), &pb.CreateLinkRequest{
-			LongUri: long,
-		})
+		l, err := svc.CreateLink(context.Background(), long)
 		assert.NoError(t, err)
-		assert.Equal(t, l.ShortUri, baseURL+"/"+existingLink.ShortPath())
+		assert.Equal(t, l, baseURL+"/"+existingLink.ShortPath())
 	})
 }
 
@@ -234,42 +187,22 @@ func TestService_Redirect(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "error empty",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			short:   "",
-			wantErr: true,
-		},
-		{
 			name:    "error doesn't exist",
 			svc:     NewLinkService(newMockRepo(), baseURL),
 			short:   "asdasdad",
 			wantErr: true,
 		},
-		{
-			name:    "error is not alpha numeric",
-			svc:     NewLinkService(repoWithLink, baseURL),
-			short:   "short!#?",
-			wantErr: true,
-		},
-		{
-			name:    "errror long is greater than max len",
-			svc:     NewLinkService(newMockRepo(), baseURL),
-			short:   createUriOverMaxLen(link.MaxLen, baseURL),
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotLink, err := tt.svc.Redirect(context.Background(), &pb.RedirectRequest{
-				ShortPath: tt.short,
-			})
+			gotLink, err := tt.svc.Redirect(context.Background(), tt.short)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
 			}
 
 			// returned original link
-			assert.Equal(t, gotLink.LongUri, long)
+			assert.Equal(t, gotLink, long)
 		})
 	}
 }
