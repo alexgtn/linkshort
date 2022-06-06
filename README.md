@@ -22,10 +22,17 @@ Available Commands:
   main               gRPC server
 ```
 
+Run service
+```
+go run main.go main
+go run main.go http
+go run main.go execute-migration
+```
+
 Run tests with coverage
 
 ```
-go test ./... -cover
+go test ./... -cover -test.short
 ```
 
 Run fuzz tests
@@ -40,6 +47,8 @@ Make sure server is running
 
 ```
 go run main.go main
+go run main.go http
+go run main.go execute-migration
 ```
 
 Run burst tests. Launches 100x requests (create, redirect, create & redirect) concurrently.
