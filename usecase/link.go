@@ -62,7 +62,9 @@ func (s *service) CreateLink(ctx context.Context, longURL string) (string, error
 			if err != nil {
 				return "", errCreateLink(err, longURL)
 			}
-			newLink = existingLink
+
+			// return new link
+			return shortURI(s.baseURL, existingLink.ShortPath()), nil
 		}
 
 		// set short path
