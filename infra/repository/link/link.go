@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	errors2 "github.com/alexgtn/go-linkshort/domain/errors"
+	"github.com/alexgtn/go-linkshort/common"
 	"github.com/alexgtn/go-linkshort/domain/link"
 	"github.com/alexgtn/go-linkshort/ent"
 	link2 "github.com/alexgtn/go-linkshort/ent/link"
@@ -28,9 +28,9 @@ func (r *linkRepo) GetOneByShortPath(ctx context.Context, short string) (*link.L
 	if err != nil {
 		switch err.(type) {
 		case *ent.NotFoundError:
-			return nil, errors2.WrapErrNotFound(err)
+			return nil, errors.Wrapf(common.ErrNotFound, "could not find short path %s: %v", short, err)
 		case *ent.NotSingularError:
-			return nil, errors2.WrapErrNotSingular(err)
+			return nil, errors.Wrapf(common.ErrNotSingular, "more than one record with short path %s: %v", short, err)
 		default:
 			return nil, errors.Wrapf(err, "could not get link by short path %s", short)
 		}
@@ -52,9 +52,9 @@ func (r *linkRepo) GetOneByLongURL(ctx context.Context, long string) (*link.Link
 	if err != nil {
 		switch err.(type) {
 		case *ent.NotFoundError:
-			return nil, errors2.WrapErrNotFound(err)
+			return nil, errors.Wrapf(common.ErrNotFound, "could not find long url %s: %v", long, err)
 		case *ent.NotSingularError:
-			return nil, errors2.WrapErrNotSingular(err)
+			return nil, errors.Wrapf(common.ErrNotSingular, "more than one record with long url %s: %v", long, err)
 		default:
 			return nil, errors.Wrapf(err, "could not get link %s", long)
 		}
