@@ -17,6 +17,7 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"google.golang.org/grpc"
 
+	http2 "github.com/alexgtn/go-linkshort/delivery/http"
 	pb "github.com/alexgtn/go-linkshort/proto"
 )
 
@@ -45,7 +46,7 @@ var httpCmd = &cobra.Command{
 		}
 
 		// serve documentation
-		err = mux.HandlePath("GET", "/api/docs", serveDocs)
+		err = mux.HandlePath("GET", "/api/docs", Handle(http2.ServeDocs))
 		if err != nil {
 			log.Fatalf("failed to register docs handler: %v", err)
 		}
@@ -56,6 +57,13 @@ var httpCmd = &cobra.Command{
 			log.Fatalf("failed to start gRPC gateway: %v", err)
 		}
 	},
+}
+
+// Handle takes basic http handle and returns gateway handle
+func Handle(handlerFunc http.HandlerFunc) runtime.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		handlerFunc(w, r)
+	}
 }
 
 // redirectResponseModifier sets HTTP redirect headers for the redirect response
@@ -72,11 +80,6 @@ func redirectResponseModifier(_ context.Context, w http.ResponseWriter, p proto.
 	}
 
 	return nil
-}
-
-// serveDocs serves documentation
-func serveDocs(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-	http.ServeFile(w, r, "docs/index.html")
 }
 
 // hexEscapeNonASCII ripped from http.Redirect implementation :P
