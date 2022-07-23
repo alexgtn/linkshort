@@ -13,15 +13,15 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	delivery "github.com/alexgtn/go-linkshort/delivery/grpc"
-	"github.com/alexgtn/go-linkshort/ent"
-	"github.com/alexgtn/go-linkshort/infra/repository/link"
-	"github.com/alexgtn/go-linkshort/infra/sqlite"
-	pb "github.com/alexgtn/go-linkshort/proto"
-	"github.com/alexgtn/go-linkshort/usecase"
-
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"google.golang.org/grpc"
+
+	delivery "github.com/alexgtn/go-linkshort/internal/delivery/grpc"
+	"github.com/alexgtn/go-linkshort/internal/infra/repository/link"
+	"github.com/alexgtn/go-linkshort/internal/infra/sqlite"
+	"github.com/alexgtn/go-linkshort/internal/usecase"
+	ent "github.com/alexgtn/go-linkshort/tools/ent/codegen"
+	pb "github.com/alexgtn/go-linkshort/tools/proto"
 )
 
 var grpcPort = flag.Int("port", 50051, "The server port")

@@ -7,9 +7,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/schema"
 
-	"github.com/alexgtn/go-linkshort/ent"
-	"github.com/alexgtn/go-linkshort/ent/migrate"
-	"github.com/alexgtn/go-linkshort/infra/sqlite"
+	"github.com/alexgtn/go-linkshort/internal/infra/sqlite"
+	ent "github.com/alexgtn/go-linkshort/tools/ent/codegen"
+	"github.com/alexgtn/go-linkshort/tools/ent/codegen/migrate"
 
 	"github.com/spf13/cobra"
 )

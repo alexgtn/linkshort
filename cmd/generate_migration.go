@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 
-	"github.com/alexgtn/go-linkshort/infra/sqlite"
-
 	"github.com/spf13/cobra"
+
+	"github.com/alexgtn/go-linkshort/internal/infra/sqlite"
 )
 
 // migrateCmd represents the migrate command

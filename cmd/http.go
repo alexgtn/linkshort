@@ -17,8 +17,8 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"google.golang.org/grpc"
 
-	http2 "github.com/alexgtn/go-linkshort/delivery/http"
-	pb "github.com/alexgtn/go-linkshort/proto"
+	http2 "github.com/alexgtn/go-linkshort/internal/delivery/http"
+	"github.com/alexgtn/go-linkshort/tools/proto"
 )
 
 var httpPort = flag.Int("http-port", 8080, "The HTTP server port")
@@ -40,7 +40,7 @@ var httpCmd = &cobra.Command{
 		)
 		opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 		// assuming here the gRPC server is running on the same host, hence localhost
-		err := pb.RegisterLinkshortServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", *grpcPort), opts)
+		err := link.RegisterLinkshortServiceHandlerFromEndpoint(ctx, mux, fmt.Sprintf("localhost:%d", *grpcPort), opts)
 		if err != nil {
 			log.Fatalf("failed to register gRPC gateway: %v", err)
 		}
@@ -68,7 +68,7 @@ func Handle(handlerFunc http.HandlerFunc) runtime.HandlerFunc {
 
 // redirectResponseModifier sets HTTP redirect headers for the redirect response
 func redirectResponseModifier(_ context.Context, w http.ResponseWriter, p proto.Message) error {
-	redirectReply, ok := p.(*pb.RedirectReply)
+	redirectReply, ok := p.(*link.RedirectReply)
 	if ok {
 		w.Header().Set("Location", hexEscapeNonASCII(redirectReply.LongUri))
 		w.WriteHeader(http.StatusMovedPermanently)
