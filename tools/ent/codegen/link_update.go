@@ -100,7 +100,7 @@ func (lu *LinkUpdate) Save(ctx context.Context) (int, error) {
 		})
 		for i := len(lu.hooks) - 1; i >= 0; i-- {
 			if lu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+				return 0, fmt.Errorf("codegen: uninitialized hook (forgotten import codegen/runtime?)")
 			}
 			mut = lu.hooks[i](mut)
 		}
@@ -137,12 +137,12 @@ func (lu *LinkUpdate) ExecX(ctx context.Context) {
 func (lu *LinkUpdate) check() error {
 	if v, ok := lu.mutation.ShortPath(); ok {
 		if err := link.ShortPathValidator(v); err != nil {
-			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`codegen: validator failed for field "Link.short_path": %w`, err)}
 		}
 	}
 	if v, ok := lu.mutation.AccessedTimes(); ok {
 		if err := link.AccessedTimesValidator(v); err != nil {
-			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`ent: validator failed for field "Link.accessed_times": %w`, err)}
+			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`codegen: validator failed for field "Link.accessed_times": %w`, err)}
 		}
 	}
 	return nil
@@ -292,7 +292,7 @@ func (luo *LinkUpdateOne) Save(ctx context.Context) (*Link, error) {
 		})
 		for i := len(luo.hooks) - 1; i >= 0; i-- {
 			if luo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+				return nil, fmt.Errorf("codegen: uninitialized hook (forgotten import codegen/runtime?)")
 			}
 			mut = luo.hooks[i](mut)
 		}
@@ -329,12 +329,12 @@ func (luo *LinkUpdateOne) ExecX(ctx context.Context) {
 func (luo *LinkUpdateOne) check() error {
 	if v, ok := luo.mutation.ShortPath(); ok {
 		if err := link.ShortPathValidator(v); err != nil {
-			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`codegen: validator failed for field "Link.short_path": %w`, err)}
 		}
 	}
 	if v, ok := luo.mutation.AccessedTimes(); ok {
 		if err := link.AccessedTimesValidator(v); err != nil {
-			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`ent: validator failed for field "Link.accessed_times": %w`, err)}
+			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`codegen: validator failed for field "Link.accessed_times": %w`, err)}
 		}
 	}
 	return nil
@@ -353,7 +353,7 @@ func (luo *LinkUpdateOne) sqlSave(ctx context.Context) (_node *Link, err error) 
 	}
 	id, ok := luo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Link.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`codegen: missing "Link.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := luo.fields; len(fields) > 0 {
@@ -361,7 +361,7 @@ func (luo *LinkUpdateOne) sqlSave(ctx context.Context) (_node *Link, err error) 
 		_spec.Node.Columns = append(_spec.Node.Columns, link.FieldID)
 		for _, f := range fields {
 			if !link.ValidColumn(f) {
-				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("codegen: invalid field %q for query", f)}
 			}
 			if f != link.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)

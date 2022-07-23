@@ -99,7 +99,7 @@ func (l *Link) Update() *LinkUpdateOne {
 func (l *Link) Unwrap() *Link {
 	tx, ok := l.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Link is not a transactional entity")
+		panic("codegen: Link is not a transactional entity")
 	}
 	l.config.driver = tx.drv
 	return l

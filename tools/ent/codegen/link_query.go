@@ -259,7 +259,7 @@ func (lq *LinkQuery) Clone() *LinkQuery {
 //
 //	client.Link.Query().
 //		GroupBy(link.FieldShortPath).
-//		Aggregate(ent.Count()).
+//		Aggregate(codegen.Count()).
 //		Scan(ctx, &v)
 //
 func (lq *LinkQuery) GroupBy(field string, fields ...string) *LinkGroupBy {
@@ -300,7 +300,7 @@ func (lq *LinkQuery) Select(fields ...string) *LinkSelect {
 func (lq *LinkQuery) prepareQuery(ctx context.Context) error {
 	for _, f := range lq.fields {
 		if !link.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			return &ValidationError{Name: f, err: fmt.Errorf("codegen: invalid field %q for query", f)}
 		}
 	}
 	if lq.path != nil {
@@ -350,7 +350,7 @@ func (lq *LinkQuery) sqlCount(ctx context.Context) (int, error) {
 func (lq *LinkQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := lq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %w", err)
+		return false, fmt.Errorf("codegen: check existence: %w", err)
 	}
 	return n > 0, nil
 }

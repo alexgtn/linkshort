@@ -107,7 +107,7 @@ func (m LinkMutation) Client() *Client {
 // it returns an error otherwise.
 func (m LinkMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
+		return nil, errors.New("codegen: mutation is not running in a transaction")
 	}
 	tx := &Tx{config: m.config}
 	tx.init()

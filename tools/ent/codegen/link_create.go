@@ -104,7 +104,7 @@ func (lc *LinkCreate) Save(ctx context.Context) (*Link, error) {
 		})
 		for i := len(lc.hooks) - 1; i >= 0; i-- {
 			if lc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+				return nil, fmt.Errorf("codegen: uninitialized hook (forgotten import codegen/runtime?)")
 			}
 			mut = lc.hooks[i](mut)
 		}
@@ -153,27 +153,27 @@ func (lc *LinkCreate) defaults() {
 func (lc *LinkCreate) check() error {
 	if v, ok := lc.mutation.ShortPath(); ok {
 		if err := link.ShortPathValidator(v); err != nil {
-			return &ValidationError{Name: "short_path", err: fmt.Errorf(`ent: validator failed for field "Link.short_path": %w`, err)}
+			return &ValidationError{Name: "short_path", err: fmt.Errorf(`codegen: validator failed for field "Link.short_path": %w`, err)}
 		}
 	}
 	if _, ok := lc.mutation.LongURI(); !ok {
-		return &ValidationError{Name: "long_uri", err: errors.New(`ent: missing required field "Link.long_uri"`)}
+		return &ValidationError{Name: "long_uri", err: errors.New(`codegen: missing required field "Link.long_uri"`)}
 	}
 	if v, ok := lc.mutation.LongURI(); ok {
 		if err := link.LongURIValidator(v); err != nil {
-			return &ValidationError{Name: "long_uri", err: fmt.Errorf(`ent: validator failed for field "Link.long_uri": %w`, err)}
+			return &ValidationError{Name: "long_uri", err: fmt.Errorf(`codegen: validator failed for field "Link.long_uri": %w`, err)}
 		}
 	}
 	if _, ok := lc.mutation.AccessedTimes(); !ok {
-		return &ValidationError{Name: "accessed_times", err: errors.New(`ent: missing required field "Link.accessed_times"`)}
+		return &ValidationError{Name: "accessed_times", err: errors.New(`codegen: missing required field "Link.accessed_times"`)}
 	}
 	if v, ok := lc.mutation.AccessedTimes(); ok {
 		if err := link.AccessedTimesValidator(v); err != nil {
-			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`ent: validator failed for field "Link.accessed_times": %w`, err)}
+			return &ValidationError{Name: "accessed_times", err: fmt.Errorf(`codegen: validator failed for field "Link.accessed_times": %w`, err)}
 		}
 	}
 	if _, ok := lc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Link.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`codegen: missing required field "Link.created_at"`)}
 	}
 	return nil
 }
