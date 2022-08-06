@@ -8,6 +8,8 @@
 
 Video walkthrough: https://www.youtube.com/watch?v=XQpFS3cSMRE
 
+Based on supernova https://github.com/alexgtn/supernova 
+
 Implemented with hexagonal architecture. More: https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/
 
 ```
